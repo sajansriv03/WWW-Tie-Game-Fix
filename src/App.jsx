@@ -456,9 +456,20 @@ export default function App() {
     return {hasAnyMoves: false, nextPlayerIndex: null};
   };
 
-  const getWinnerName = (scoresState) => (
-    Object.keys(scoresState).reduce((a, b) => scoresState[a] > scoresState[b] ? a : b)
-  );
+  const getWinnerName = (scoresState) => {
+    const playerNames = Object.keys(scoresState || {});
+    if(playerNames.length === 0) return '';
+
+    const highestScore = Math.max(...playerNames.map((player) => scoresState[player] ?? 0));
+    const winningPlayers = playerNames.filter((player) => (scoresState[player] ?? 0) === highestScore);
+
+    if(winningPlayers.length === 1) return `${winningPlayers[0]} Wins!`;
+    if(winningPlayers.length === playerNames.length) return 'Tie!';
+    if(winningPlayers.length === 2) return `Tie Between ${winningPlayers[0]} and ${winningPlayers[1]}!`;
+    if(winningPlayers.length === 3) return `Tie between ${winningPlayers[0]}, ${winningPlayers[1]}, and ${winningPlayers[2]}!`;
+
+    return 'Tie!';
+  };
 
   const checkOuthouses = (cells) => cells.some(([c, r]) => OUTHOUSES.some(([oc, or]) => oc === c && or === r));
 
@@ -1337,7 +1348,7 @@ export default function App() {
         }} style={{position:'fixed',left:`${(gameOverPopupPosition?.x ?? Math.max(20, (window.innerWidth - 520) / 2))}px`,top:`${(gameOverPopupPosition?.y ?? Math.max(20, (window.innerHeight - 420) / 2))}px`,background:'rgba(255,255,255,0.97)',padding:'24px',borderRadius:'15px',textAlign:'center',width:'520px',maxWidth:'92vw',zIndex:1000,boxShadow:'0 8px 25px rgba(0,0,0,0.3)',cursor:'move'}}>
           <div>
             <h1 style={{margin:'0 0 10px 0',color:'#FFD700'}}>Game Over!</h1>
-            <h2 style={{margin:'0 0 16px 0'}}>{gameState.winner} Wins!</h2>
+            <h2 style={{margin:'0 0 16px 0'}}>{gameState.winner}</h2>
             {gameState.lastActionMessage && <div style={{fontSize:'13px',marginBottom:'14px',color:'#555'}}>{gameState.lastActionMessage}</div>}
             <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit, minmax(120px, 1fr))',gap:'12px',marginBottom:'18px',maxHeight:'48vh',overflowY:'auto',padding:'4px'}}>
               {players.map(player => (
